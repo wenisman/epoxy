@@ -57,6 +57,10 @@ func readTCPResponse(conn *net.TCPConn) ([]byte, error) {
 
 // use tcp tunneling as for CONNECT as this covers https and ws
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
+	if isAllowedEndpoint(r.Host) == false {
+		http.Error(w, "blocked endpoint", 404)
+		return
+	}
 	log.Println(fmt.Sprintf("tunnel to %s", r.Host))
 
 	proxy := calculateProxy(r)
@@ -140,7 +144,6 @@ func createTransport() *http.Transport {
 
 // handle basic HTTP traffic
 func handleHTTP(w http.ResponseWriter, req *http.Request) {
-	log.Println("handling http request", req.Host, req.URL.String())
 	if req.URL.Scheme == "" {
 		req.URL.Scheme = "http"
 	}
@@ -186,5 +189,7 @@ func ListenAndServeProxy() {
 		//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
-	log.Fatal(server.ListenAndServe())
+	err := server.ListenAndServe()
+	log.Fatal(err)
+	panic(err)
 }

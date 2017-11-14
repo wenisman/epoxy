@@ -1,0 +1,23 @@
+proxies:
+  - level: 1
+    uri: "175.45.134.96:80"
+
+blacklist:
+  - .*\.addthis\.com
+  - .*adservice\.google\.com
+  - .*\.adservice\.google\.com
+  - .*\.adinfinity\.com\.au
+  - .*\.bing\.com
+  - .*\.adnxs\.com
+  - .*\.demdex\.net
+  - .*\.doubleclick\.net
+  - .*\.facebook\.com
+  - .*\.facebook\.net
+  - .*\google-analytics\.com
+  - .*\.googletagservices\.com
+  - .*\.krxd\.net
+  - .*\.tremorhub\.com
+  - .*\.taboola\.com
+  - .*\.sundaysky\.com
+  - .*\.tvsquared\.com
+  - .*\.uciservice\.com
