@@ -107,24 +107,9 @@ func transfer(source io.ReadCloser, destination io.WriteCloser) {
 	io.Copy(destination, source)
 }
 
-// get the proxy hint from the headers and use this to work out the proxy
-// to use
-func calculateProxy(req *http.Request) string {
-	var proxy string
-	hint := req.Header.Get("X-Proxy-Hint")
-	switch hint {
-	case "empty":
-		break
-	default:
-		proxy = "175.45.134.96:80"
-	}
-
-	return proxy
-}
-
 // create a proxy url for use in the http transport
 func proxyURL(req *http.Request) (*url.URL, error) {
-	proxy := calculateProxy(req)
+	proxy := getProxy(req)
 	return url.Parse(fmt.Sprintf("http://%s", proxy))
 }
 

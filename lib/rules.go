@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// check that the end point is allowed to be reached based on the rules
 func isAllowedEndpoint(endpoint string) bool {
 	start := time.Now()
 	defer log.Println("endpoint rule time taken:", time.Since(start))
@@ -31,39 +33,37 @@ type ProxyHint struct {
 	Priority int      `json:"priority" structs:"priority" mapstructure:"priority"`
 }
 
+// this will validate the proxy specified in the hint is still valid
 func filterUseProxy(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
-	for _, proxy := range proxies {
-		v := proxy.(map[string]interface{})
-		if v["uri"] == ph.Use {
-			return proxy.(map[string]interface{})
+	if proxies[ph.Use] != nil {
+		return map[string]interface{}{
+			ph.Use: proxies[ph.Use],
 		}
 	}
 
 	return nil
 }
 
+// remove all the failed proxies from the list of available proxies
 func filterFailedProxies(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
 	for _, p := range ph.Failed {
-		for k, i := range proxies {
-			v := i.(map[string]interface{})
-			if v["uri"] == p {
-				delete(proxies, k)
-			}
-		}
+		delete(proxies, p)
 	}
 
 	return proxies
 }
 
+// remove all proxies from the list that are not of the desired priority
 func filterPriorityProxies(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
+	priority := 2
 	if ph.Priority != 0 {
-		priority := ph.Priority
+		priority = ph.Priority
+	}
 
-		for k, v := range proxies {
-			p := v.(map[string]interface{})
-			if p["priority"] != priority {
-				delete(proxies, k)
-			}
+	// remove all the proxies with priority not matching the required
+	for k, v := range proxies {
+		if priority != v.(int) {
+			delete(proxies, k)
 		}
 	}
 
@@ -82,20 +82,19 @@ func getProxy(req *http.Request) string {
 		// we have the header so process
 		json.Unmarshal([]byte(hintHeader), &hint)
 
-		proxy := filterUseProxy(&hint, proxies)
-		if proxy != nil {
-			return proxy["uri"].(string)
+		if hint.Use != "" {
+			return hint.Use
 		}
 
 		proxies = filterFailedProxies(&hint, proxies)
 		proxies = filterPriorityProxies(&hint, proxies)
 	}
 
-	var uris []string
-	// extract the uris and return the first one
-	for _, v := range proxies {
-		uris[len(uris)] = v.(map[string]interface{})["uri"].(string)
+	// extract the uris and return a random uri
+	uris := make([]string, len(proxies))
+	for k := range proxies {
+		uris[len(uris)] = k
 	}
 
-	return uris[0]
+	return uris[rand.Intn(len(uris))]
 }

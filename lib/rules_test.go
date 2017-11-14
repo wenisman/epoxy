@@ -10,14 +10,8 @@ import (
 
 func setupViper() {
 	viper.Set("proxies", map[string]interface{}{
-		"pone": map[string]interface{}{
-			"uri":      "192.168.100.1:80",
-			"priority": 1,
-		},
-		"ptwo": map[string]interface{}{
-			"uri":      "192.168.100.2:80",
-			"priority": 2,
-		},
+		"192.168.100.1:80": 1,
+		"192.168.100.2:80": 2,
 	})
 }
 
@@ -29,14 +23,8 @@ func TestFilterPriorityProxies(t *testing.T) {
 	ph := &ProxyHint{}
 
 	proxies := map[string]interface{}{
-		"pOne": map[string]interface{}{
-			"uri":      "192.168.100.1:80",
-			"priority": 1,
-		},
-		"pTwo": map[string]interface{}{
-			"uri":      "192.168.100.2:80",
-			"priority": 2,
-		},
+		"192.168.100.1:80": 1,
+		"192.168.100.2:80": 2,
 	}
 
 	output := filterPriorityProxies(ph, proxies)
@@ -52,8 +40,8 @@ func TestFilterPriorityProxies(t *testing.T) {
 		t.Fatalf("Incorrect number of priority proxies returned")
 	}
 
-	for _, v := range output {
-		if v.(map[string]interface{})["uri"] != "192.168.100.2:80" {
+	for k := range output {
+		if k != "192.168.100.2:80" {
 			t.Fatalf("incorrect proxy returned for priority 2")
 		}
 	}
@@ -64,14 +52,8 @@ func TestFilterUseProxy(t *testing.T) {
 	defer log.Println("filterUseProxy rule time taken:", time.Since(start))
 
 	proxies := map[string]interface{}{
-		"pOne": map[string]interface{}{
-			"uri":      "192.168.100.1:80",
-			"priority": 1,
-		},
-		"pTwo": map[string]interface{}{
-			"uri":      "192.168.100.2:80",
-			"priority": 2,
-		},
+		"192.168.100.1:80": 1,
+		"192.168.100.2:80": 2,
 	}
 
 	ph := &ProxyHint{
@@ -79,8 +61,10 @@ func TestFilterUseProxy(t *testing.T) {
 	}
 
 	proxy := filterUseProxy(ph, proxies)
-	if proxy["uri"] != "192.168.100.1:80" {
-		t.Fatalf("incorrect proxy returned for use proxy")
+	for k := range proxy {
+		if k != "192.168.100.1:80" {
+			t.Fatalf("incorrect proxy returned for use proxy")
+		}
 	}
 }
 
@@ -89,14 +73,8 @@ func TestFailedProxyFilter(t *testing.T) {
 	defer log.Println("filterFailedProxy rule time taken:", time.Since(start))
 
 	proxies := map[string]interface{}{
-		"pOne": map[string]interface{}{
-			"uri":      "192.168.100.1:80",
-			"priority": 1,
-		},
-		"pTwo": map[string]interface{}{
-			"uri":      "192.168.100.2:80",
-			"priority": 2,
-		},
+		"192.168.100.1:80": 1,
+		"192.168.100.2:80": 2,
 	}
 
 	ph := &ProxyHint{
@@ -109,8 +87,8 @@ func TestFailedProxyFilter(t *testing.T) {
 		t.Fatalf("Incorrect number of priority proxies returned")
 	}
 
-	for _, v := range output {
-		if v.(map[string]interface{})["uri"] != "192.168.100.2:80" {
+	for k := range output {
+		if k != "192.168.100.2:80" {
 			t.Fatalf("incorrect proxy returned for priority 2")
 		}
 	}
