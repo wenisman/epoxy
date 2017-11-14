@@ -31,9 +31,7 @@ type ProxyHint struct {
 	Priority int      `json:"priority" structs:"priority" mapstructure:"priority"`
 }
 
-func filterUseProxy(ph *ProxyHint) map[string]interface{} {
-	proxies := viper.GetStringMap("proxies")
-
+func filterUseProxy(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
 	for _, proxy := range proxies {
 		v := proxy.(map[string]interface{})
 		if v["uri"] == ph.Use {
@@ -84,7 +82,7 @@ func getProxy(req *http.Request) string {
 		// we have the header so process
 		json.Unmarshal([]byte(hintHeader), &hint)
 
-		proxy := filterUseProxy(&hint)
+		proxy := filterUseProxy(&hint, proxies)
 		if proxy != nil {
 			return proxy["uri"].(string)
 		}
