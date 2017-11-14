@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // write the HTTP connection message
@@ -182,8 +184,10 @@ func handler() http.Handler {
 
 // ListenAndServeProxy will start the proxy on the local machine
 func ListenAndServeProxy() {
+	port := viper.GetInt("port")
+
 	server := http.Server{
-		Addr:    ":9001",
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler(),
 		// Disable HTTP/2.
 		//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),

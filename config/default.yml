@@ -1,14 +1,17 @@
+port: 9001
+
 proxies:
-  - level: 1
+  public:
     uri: "175.45.134.96:80"
+    priority: 2
 
 blacklist:
   - .*\.addthis\.com
   - .*adservice\.google\.com
   - .*\.adservice\.google\.com
   - .*\.adinfinity\.com\.au
-  - .*\.bing\.com
   - .*\.adnxs\.com
+  - .*\.bing\.com
   - .*\.demdex\.net
   - .*\.doubleclick\.net
   - .*\.facebook\.com
