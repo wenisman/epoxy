@@ -78,7 +78,7 @@ func TestFilterUseProxy(t *testing.T) {
 		Use: "192.168.100.1:80",
 	}
 
-	proxy := filterUseProxy(ph)
+	proxy := filterUseProxy(ph, proxies)
 	if proxy["uri"] != "192.168.100.1:80" {
 		t.Fatalf("incorrect proxy returned for use proxy")
 	}
