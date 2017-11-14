@@ -44,9 +44,7 @@ func filterUseProxy(ph *ProxyHint) map[string]interface{} {
 	return nil
 }
 
-func filterFailedProxies(ph *ProxyHint) map[string]interface{} {
-	proxies := viper.GetStringMap("proxies")
-
+func filterFailedProxies(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
 	for _, p := range ph.Failed {
 		for k, i := range proxies {
 			v := i.(map[string]interface{})
@@ -78,19 +76,25 @@ func getProxy(req *http.Request) string {
 	start := time.Now()
 	defer log.Println("getProxy rule time taken:", time.Since(start))
 
+	proxies := viper.GetStringMap("proxies")
+
 	var hint ProxyHint
 	hintHeader := req.Header.Get("X-Proxy-Hint")
-	json.Unmarshal([]byte(hintHeader), &hint)
+	if hintHeader != "" {
+		// we have the header so process
+		json.Unmarshal([]byte(hintHeader), &hint)
 
-	proxy := filterUseProxy(&hint)
-	if proxy != nil {
-		return proxy["uri"].(string)
+		proxy := filterUseProxy(&hint)
+		if proxy != nil {
+			return proxy["uri"].(string)
+		}
+
+		proxies = filterFailedProxies(&hint, proxies)
+		proxies = filterPriorityProxies(&hint, proxies)
 	}
 
-	proxies := filterFailedProxies(&hint)
-	proxies = filterPriorityProxies(&hint, proxies)
-
 	var uris []string
+	// extract the uris and return the first one
 	for _, v := range proxies {
 		uris[len(uris)] = v.(map[string]interface{})["uri"].(string)
 	}
