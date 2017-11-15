@@ -26,6 +26,7 @@ var startCommand = &cobra.Command{
 	Short: "Start the Epoxy server",
 	Run: func(cmd *cobra.Command, args []string) {
 		lib.LoadConfig()
+		lib.SetLogLevel()
 		lib.ListenAndServeProxy()
 	},
 }

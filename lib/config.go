@@ -3,8 +3,20 @@ package lib
 import (
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
+
+// SetLogLevel will set the logging level for your application
+func SetLogLevel() {
+	if viper.InConfig("loglevel") && viper.GetString("loglevel") != "" {
+		level, err := log.ParseLevel(viper.GetString("loglevel"))
+		if err != nil {
+			panic(err)
+		}
+		log.SetLevel(level)
+	}
+}
 
 // LoadConfig will read the default and environment specific config files
 func LoadConfig() {
@@ -19,7 +31,7 @@ func LoadConfig() {
 	}
 
 	// load the environment specific file
-	if viper.InConfig("environment") && viper.GetString("environment") != "" {
+	if viper.GetString("environment") != "" {
 		viper.SetConfigFile(fmt.Sprintf("./config/%s.yml", viper.GetString("environment")))
 		viper.MergeInConfig()
 	}
