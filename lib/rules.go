@@ -2,19 +2,22 @@ package lib
 
 import (
 	"encoding/json"
-	"log"
 	"math/rand"
 	"net/http"
 	"regexp"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // check that the end point is allowed to be reached based on the rules
 func isAllowedEndpoint(endpoint string) bool {
 	start := time.Now()
-	defer log.Println("endpoint rule time taken:", time.Since(start))
+	defer log.WithFields(log.Fields{
+		"rule": "isAllowedEndpoint",
+	}).Debugf("time taken: %s", time.Since(start))
+
 	blacklist := viper.GetStringSlice("blacklist")
 	for _, v := range blacklist {
 		result, _ := regexp.Match(v, []byte(endpoint))
@@ -35,6 +38,11 @@ type ProxyHint struct {
 
 // this will validate the proxy specified in the hint is still valid
 func filterUseProxy(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
+	start := time.Now()
+	defer log.WithFields(log.Fields{
+		"rule": "filterUseProxy",
+	}).Debugf("time taken: %s", time.Since(start))
+
 	if proxies[ph.Use] != nil {
 		return map[string]interface{}{
 			ph.Use: proxies[ph.Use],
@@ -46,6 +54,11 @@ func filterUseProxy(ph *ProxyHint, proxies map[string]interface{}) map[string]in
 
 // remove all the failed proxies from the list of available proxies
 func filterFailedProxies(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
+	start := time.Now()
+	defer log.WithFields(log.Fields{
+		"rule": "filterFailedProxies",
+	}).Debugf("time taken: %s", time.Since(start))
+
 	for _, p := range ph.Failed {
 		delete(proxies, p)
 	}
@@ -55,6 +68,11 @@ func filterFailedProxies(ph *ProxyHint, proxies map[string]interface{}) map[stri
 
 // remove all proxies from the list that are not of the desired priority
 func filterPriorityProxies(ph *ProxyHint, proxies map[string]interface{}) map[string]interface{} {
+	start := time.Now()
+	defer log.WithFields(log.Fields{
+		"rule": "filterPriorityProxies",
+	}).Debugf("time taken: %s", time.Since(start))
+
 	priority := 2
 	if ph.Priority != 0 {
 		priority = ph.Priority
@@ -72,7 +90,9 @@ func filterPriorityProxies(ph *ProxyHint, proxies map[string]interface{}) map[st
 
 func getProxy(req *http.Request) string {
 	start := time.Now()
-	defer log.Println("getProxy rule time taken:", time.Since(start))
+	defer log.WithFields(log.Fields{
+		"rule": "getProxy",
+	}).Debugf("time taken: %s", time.Since(start))
 
 	proxies := viper.GetStringMap("proxies")
 
@@ -89,11 +109,10 @@ func getProxy(req *http.Request) string {
 		proxies = filterFailedProxies(&hint, proxies)
 		proxies = filterPriorityProxies(&hint, proxies)
 	}
-
 	// extract the uris and return a random uri
-	uris := make([]string, len(proxies))
+	var uris []string
 	for k := range proxies {
-		uris[len(uris)] = k
+		uris = append(uris, k)
 	}
 
 	return uris[rand.Intn(len(uris))]

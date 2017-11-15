@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -63,9 +63,20 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "blocked endpoint", 404)
 		return
 	}
-	log.Println(fmt.Sprintf("tunnel to %s", r.Host))
 
-	proxy := calculateProxy(r)
+	proxy := getProxy(r)
+
+	log.WithFields(log.Fields{
+		"connection": "tunnel",
+		"proxy":      proxy,
+		"endpoint":   "r.Host",
+	}).Debugf("tunnel to %s through", r.Host)
+
+	if proxy == "" {
+		// fall back to direct connection if no proxy is found
+		proxy = r.Host
+	}
+
 	raddr, err := net.ResolveTCPAddr("tcp", proxy)
 	if err != nil {
 		http.Error(w, "Unable to connect backconnect proxy", 404)
@@ -74,8 +85,8 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	destConn, err := net.DialTCP("tcp", nil, raddr)
 	_, err = writeTCPConnection(destConn, r)
 
-	// basically reading the 200 response and throwing it away
-	_, err = readTCPResponse(destConn)
+	// reading the response from remote
+	resp, err := readTCPResponse(destConn)
 
 	// log out the request details
 	if err != nil {
@@ -83,7 +94,8 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	// pass the response back to the client so they can decide what to do
+	w.Write(resp)
 	hijacker, ok := w.(http.Hijacker)
 	if !ok {
 		http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
@@ -134,6 +146,11 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.URL.Scheme == "" {
 		req.URL.Scheme = "http"
 	}
+
+	log.WithFields(log.Fields{
+		"endpoint":   "r.Host",
+		"connection": "http",
+	}).Debugf("http connection to %s", req.Host)
 
 	transport := createTransport()
 	resp, err := transport.RoundTrip(req)

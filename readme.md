@@ -13,6 +13,17 @@ If it is a basic HTTP connection then an HTTP transport is set up that will make
 HTTPS and web sockets are a little bit trickier but imagine a simple TCP tunnel, and that is in essence what your client will connect over to the remote. The steps to create the tunnel are to receive the Client request, then create a new TCP connection to the remote and using two GO routines copy the data between the client and remote sources. 
 
 ## Running
+### Configuration
+You will need to set up the configuration file to get the proxy to run
+The file is located at `config/[env.yml]` however you can always override the `config/default.yml` too
+
+| name      | type           | description                                                    |
+| --------- | -------------- | -------------------------------------------------------------- |
+| port      | int            | port the proxy will run on                                     |
+| proxies   | map[string]int | the list of backconnect proxy uri's followed by their priority |
+| blacklist | []string       | regex list of uri endpoints to block traffic to                |
+
+### Starting
 To start the proxy locally you will need to build the proxy and then run
 
 ```
@@ -21,3 +32,10 @@ go build && ./epoxy start
 
 Your proxy will then be running on `localhost:9001`
 
+
+## Thanks
+This project is built using the following libraries:
+
+[Cobra](https://github.com/spf13/cobra)
+
+[Viper](https://github.com/spf13/viper)
