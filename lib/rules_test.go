@@ -33,6 +33,10 @@ func TestFilterPriorityProxies(t *testing.T) {
 		t.Fatalf("No proxies returned")
 	}
 
+	if len(output) != 1 {
+		t.Fatalf("default proxy priority not honoured")
+	}
+
 	ph.Priority = 2
 	output = filterPriorityProxies(ph, proxies)
 

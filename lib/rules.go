@@ -105,10 +105,10 @@ func getProxy(req *http.Request) string {
 		if hint.Use != "" {
 			return hint.Use
 		}
-
-		proxies = filterFailedProxies(&hint, proxies)
-		proxies = filterPriorityProxies(&hint, proxies)
 	}
+	proxies = filterFailedProxies(&hint, proxies)
+	proxies = filterPriorityProxies(&hint, proxies)
+
 	// extract the uris and return a random uri
 	var uris []string
 	for k := range proxies {

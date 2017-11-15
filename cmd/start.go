@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"github.com/wenisman/epoxy/lib"
 )
 
@@ -12,11 +10,8 @@ var (
 )
 
 func init() {
-	pflag.String("environment", "", "The environment that the application is running in")
-	pflag.Int("port", 9001, "The port to listen to for inbound connections")
-
-	viper.BindEnv("environment")
-	viper.BindPFlags(pflag.CommandLine)
+	startCommand.Flags().String("environment", "", "The environment that the application is running in")
+	startCommand.Flags().Int("port", 9001, "The port to listen to for inbound connections")
 
 	RootCmd.AddCommand(startCommand)
 }
