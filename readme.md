@@ -53,7 +53,7 @@ ie
 export EPOXY_TEST_VAR="test value"
 
 ```
-is equivalent to using the configuration file
+will override the configuration file
 ```
 test-var: another test value
 ```
