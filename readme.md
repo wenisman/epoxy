@@ -43,6 +43,22 @@ The file is located at `config/[env.yml]` however you can always override the `c
 | proxies   | map[string]int | the list of backconnect proxy uri's followed by their priority |
 | blacklist | []string       | regex list of uri endpoints to block traffic to                |
 
+### Environment variables
+To use environment variables they must be prefixed with `EPOXY_`, this will mark it as an Epoxy variable.
+
+Any configuration variable can be overriden by an environment variable, you will need to replace the `-` in the environment variable with `_`. 
+
+ie 
+```
+export EPOXY_TEST_VAR="test value"
+
+```
+is equivalent to using the configuration file
+```
+test-var: another test value
+```
+
+
 ### Starting
 To start the proxy locally you will need to build the proxy and then run
 
@@ -59,3 +75,6 @@ This project is built using the following libraries:
 [Cobra](https://github.com/spf13/cobra)
 
 [Viper](https://github.com/spf13/viper)
+
+[logrus](github.com/sirupsen/logrus)
+
