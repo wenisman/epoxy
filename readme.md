@@ -12,6 +12,26 @@ If it is a basic HTTP connection then an HTTP transport is set up that will make
 ### HTTPS / WS
 HTTPS and web sockets are a little bit trickier but imagine a simple TCP tunnel, and that is in essence what your client will connect over to the remote. The steps to create the tunnel are to receive the Client request, then create a new TCP connection to the remote and using two GO routines copy the data between the client and remote sources. 
 
+## Directing the Proxy Selection 
+You are able to provide hints to the proxy to enable a better selection of proxies for your needs. To do this you can provide a header `X-Proxy-Hint` which will guide the selection, this header is just a small json payload
+
+```
+ie.
+{ 
+  "use" : "192.168.1.1:80"
+}
+```
+
+| name     | type     | description                                                                                              |
+| -------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| use      | string   | provide the address of the proxy to use                                                                  |
+| failed   | []string | an array of strings for proxies that you dont want to use                                                |
+| priority | int      | select a group of proxies to use, 1 being the highest ranked group and any number lower is well... lower |
+
+The idea behind the priority is that Proxies that are more expensive will get a higher priority and so you will have to specify that you want to use these. They should be reserved to instances where the data is more critical and we know the cheaper proxies will fail.
+
+By default the proxy priority is set to 2, so you should get the middle tier proxies by default.
+
 ## Running
 ### Configuration
 You will need to set up the configuration file to get the proxy to run

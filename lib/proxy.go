@@ -187,7 +187,6 @@ func handler() http.Handler {
 // ListenAndServeProxy will start the proxy on the local machine
 func ListenAndServeProxy() {
 	port := viper.GetInt("port")
-
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler(),
