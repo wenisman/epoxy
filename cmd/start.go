@@ -1,15 +1,9 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wenisman/epoxy/lib"
-)
-
-var (
-	env string
 )
 
 func init() {
@@ -17,9 +11,6 @@ func init() {
 	startCommand.Flags().Int("port", 9001, "The port to listen to for inbound connections")
 
 	viper.BindPFlags(startCommand.Flags())
-	viper.SetEnvPrefix("epoxy")
-	viper.SetEnvKeyReplacer(strings.NewReplacer("_", "-"))
-	viper.AutomaticEnv()
 
 	RootCmd.AddCommand(startCommand)
 }
