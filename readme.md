@@ -50,12 +50,25 @@ Any configuration variable can be overriden by an environment variable, you will
 
 ie 
 ```
-export EPOXY_TEST_VAR="test value"
+epoxy start --port 80 
+```
+will overide the environment variable
+
+```
+export EPOXY_PORT=9010
 
 ```
 will override the configuration file
 ```
-test-var: another test value
+port: 9001
+```
+
+### Setting Proxies and Blacklist
+Since both of these are yaml structures any attempt to override these in the commndline will also need to be in the yaml format. You can use the Short Notation to achieve this
+
+```
+export EPOXY_PROXIES={\"1.1.1.1:80\":2, \"2.2.2.2:80\":2}
+export EPOXY_BLACKLIST="[\"test.com\", \"foo.com\"]"
 ```
 
 

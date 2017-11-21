@@ -57,6 +57,15 @@ func readTCPResponse(conn *net.TCPConn) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func insertHTTPHeader(data []byte, key string, value string) []byte {
+	n := bytes.Split(data, []byte("\r\n"))
+	n = append(n[:0], []byte(""))
+	copy(n[2:], n[1:])
+	n[1] = []byte(fmt.Sprintf("%s: %s", []byte(key), []byte(value)))
+
+	return bytes.Join(n, []byte("\r\n"))
+}
+
 // use tcp tunneling as for CONNECT as this covers https and ws
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	if isAllowedEndpoint(r.Host) == false {
@@ -83,6 +92,10 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	destConn, err := net.DialTCP("tcp", nil, raddr)
+
+	// just being a good netizen
+	r.Header.Add("X-Forwarded-For", r.RemoteAddr)
+
 	_, err = writeTCPConnection(destConn, r)
 
 	// reading the response from remote
@@ -93,6 +106,8 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
 	}
+
+	w.Header().Add("X-Proxy-For", proxy)
 
 	// pass the response back to the client so they can decide what to do
 	w.Write(resp)
@@ -187,6 +202,10 @@ func handler() http.Handler {
 // ListenAndServeProxy will start the proxy on the local machine
 func ListenAndServeProxy() {
 	port := viper.GetInt("port")
+	log.WithFields(log.Fields{
+		"startup": "config",
+	}).Debugf("Using port %d \r\n using proxies %v \r\n using blacklist: %v ", port, viper.Get("proxies"), viper.Get("blacklist"))
+
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler(),

@@ -2,9 +2,11 @@ package lib
 
 import (
 	"fmt"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // SetLogLevel will set the logging level for your application
@@ -15,6 +17,13 @@ func SetLogLevel() {
 			panic(err)
 		}
 		log.SetLevel(level)
+	}
+}
+
+func unmarshalConfig(name string, object interface{}) {
+	if reflect.TypeOf(viper.Get(name)).Kind() != reflect.TypeOf(object).Kind() {
+		yaml.Unmarshal([]byte(viper.GetString(name)), &object)
+		viper.Set(name, object)
 	}
 }
 
@@ -35,4 +44,10 @@ func LoadConfig() {
 		viper.SetConfigFile(fmt.Sprintf("./config/%s.yml", viper.GetString("environment")))
 		viper.MergeInConfig()
 	}
+
+	// load in the proxies from the environment or comamnd line
+	unmarshalConfig("proxies", make(map[string]interface{}))
+
+	// check we are a slice, else convert the blacklist data
+	unmarshalConfig("blacklist", []string{})
 }
